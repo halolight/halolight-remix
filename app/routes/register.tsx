@@ -10,6 +10,7 @@ import {
   Lock,
   Mail,
   MessageCircle,
+  Phone,
   Sparkles,
   User,
 } from "lucide-react"
@@ -80,6 +81,12 @@ export async function action({ request }: { request: Request }) {
   }
 }
 
+const SOCIAL_LINKS = {
+  github: "https://github.com/halolight/halolight-remix",
+  google: "https://halolight-docs.h7ml.cn",
+  wechat: "https://github.com/halolight",
+}
+
 export function meta() {
   return generateMeta("/register")
 }
@@ -87,15 +94,15 @@ export function meta() {
 export default function Register() {
   const actionData = useActionData<typeof action>()
   const navigation = useNavigation()
+
+  // 读取注册开关环境变量，默认关闭
+  const registrationEnabled = import.meta.env.VITE_ENABLE_REGISTRATION === 'true'
+
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const error = actionData?.error
   const isSubmitting = navigation.state === "submitting"
-
-  const handleSocialLogin = (provider: string) => {
-    console.log(`使用 ${provider} 注册`)
-  }
 
   return (
     <AuthShell
@@ -200,211 +207,317 @@ export default function Register() {
             </CardHeader>
 
             <CardContent className="space-y-2 sm:space-y-4 px-4 sm:px-6">
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                {[
-                  { icon: Github, name: "github" },
-                  { icon: Chrome, name: "google" },
-                  { icon: MessageCircle, name: "wechat" },
-                ].map((provider, index) => (
-                  <motion.div
-                    key={provider.name}
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.5 + index * 0.1 }}
-                  >
-                    <Button
-                      variant="outline"
-                      type="button"
-                      className="w-full h-11 sm:h-12 border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 group"
-                      onClick={() => handleSocialLogin(provider.name)}
+              {!registrationEnabled ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="space-y-6 py-6"
+                >
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                      className="relative"
                     >
-                      <provider.icon className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                    </Button>
-                  </motion.div>
-                ))}
-              </div>
+                      <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30">
+                        <Lock className="h-10 w-10 text-amber-600 dark:text-amber-500" />
+                      </div>
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                        className="absolute -inset-2 rounded-full border-2 border-dashed border-amber-300/50 dark:border-amber-700/50"
+                      />
+                    </motion.div>
 
-              <div className="relative py-3">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator className="w-full" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-3 text-muted-foreground font-medium">
-                    或使用邮箱注册
-                  </span>
-                </div>
-              </div>
-
-              <Form method="post" className="space-y-3 sm:space-y-4">
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs sm:text-sm"
-                  >
-                    {error}
-                  </motion.div>
-                )}
-
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.6 }}
-                  className="space-y-2"
-                >
-                  <label className="text-xs font-medium text-muted-foreground">您的姓名</label>
-                  <div className="relative group">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors z-10" />
-                    <Input
-                      type="text"
-                      name="name"
-                      placeholder="张三"
-                      className="pl-10 h-11 sm:h-12 text-sm border-border/50 focus:border-primary/50 rounded-xl transition-all"
-                      required
-                    />
+                    <div className="space-y-2 text-center">
+                      <h3 className="text-xl font-semibold text-foreground sm:text-2xl">
+                        注册已关闭
+                      </h3>
+                      <p className="max-w-sm text-sm text-muted-foreground">
+                        系统管理员已暂时关闭新用户注册功能
+                      </p>
+                    </div>
                   </div>
-                </motion.div>
 
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.65 }}
-                  className="space-y-2"
-                >
-                  <label className="text-xs font-medium text-muted-foreground">邮箱地址</label>
-                  <div className="relative group">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors z-10" />
-                    <Input
-                      type="email"
-                      name="email"
-                      placeholder="your@email.com"
-                      className="pl-10 h-11 sm:h-12 text-sm border-border/50 focus:border-primary/50 rounded-xl transition-all"
-                      required
-                    />
-                  </div>
-                </motion.div>
-
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.7 }}
-                  className="space-y-2"
-                >
-                  <label className="text-xs font-medium text-muted-foreground">设置密码</label>
-                  <div className="relative group">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      placeholder="••••••••"
-                      className="pl-10 pr-10 h-11 sm:h-12 text-sm border-border/50 focus:border-primary/50 rounded-xl transition-all"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  <div className="space-y-3">
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="flex items-start gap-3 rounded-lg border border-border/50 bg-muted/50 p-4 backdrop-blur-sm transition-colors hover:border-primary/20 hover:bg-muted/80"
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </motion.div>
+                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                        <Mail className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <p className="text-sm font-medium text-foreground">联系管理员</p>
+                        <p className="text-xs text-muted-foreground">
+                          如需创建账号，请通过邮件联系系统管理员
+                        </p>
+                      </div>
+                    </motion.div>
 
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.75 }}
-                  className="space-y-2"
-                >
-                  <label className="text-xs font-medium text-muted-foreground">确认密码</label>
-                  <div className="relative group">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                    <Input
-                      type={showConfirmPassword ? "text" : "password"}
-                      name="confirmPassword"
-                      placeholder="••••••••"
-                      className="pl-10 pr-10 h-11 sm:h-12 text-sm border-border/50 focus:border-primary/50 rounded-xl transition-all"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.4 }}
+                      className="flex items-start gap-3 rounded-lg border border-border/50 bg-muted/50 p-4 backdrop-blur-sm transition-colors hover:border-primary/20 hover:bg-muted/80"
                     >
-                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
+                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                        <Phone className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <p className="text-sm font-medium text-foreground">已有账号？</p>
+                        <p className="text-xs text-muted-foreground">
+                          如果您已有账号，请直接登录使用系统功能
+                        </p>
+                      </div>
+                    </motion.div>
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-border/50" />
+                    </div>
+                    <div className="relative flex justify-center">
+                      <span className="bg-card px-4 text-xs text-muted-foreground">感谢您的理解</span>
+                    </div>
                   </div>
                 </motion.div>
-
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.8 }}
-                >
-                  <label className="flex items-start gap-2 cursor-pointer group text-xs sm:text-sm">
-                    <input
-                      type="checkbox"
-                      checked={agreedToTerms}
-                      onChange={(e) => setAgreedToTerms(e.target.checked)}
-                      className="rounded border-gray-300 mt-0.5 w-4 h-4 text-primary focus:ring-primary"
-                    />
-                    <span className="text-muted-foreground group-hover:text-foreground transition-colors">
-                      我已阅读并同意{" "}
-                      <Link to="/terms" className="text-primary hover:text-primary/80 font-medium transition-colors">
-                        服务条款
-                      </Link>{" "}
-                      和{" "}
-                      <Link to="/privacy" className="text-primary hover:text-primary/80 font-medium transition-colors">
-                        隐私政策
-                      </Link>
-                    </span>
-                  </label>
-                </motion.div>
-
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.85 }}
-                >
-                  <Button
-                    type="submit"
-                    className="w-full h-11 sm:h-12 text-sm font-medium bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-                    disabled={isSubmitting || !agreedToTerms}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        注册中...
-                      </>
-                    ) : (
-                      <>
-                        创建账户
-                        <motion.span
-                          className="ml-2"
-                          animate={{ x: [0, 4, 0] }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
+              ) : (
+                <>
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                    {[
+                      { icon: Github, name: "github" },
+                      { icon: Chrome, name: "google" },
+                      { icon: MessageCircle, name: "wechat" },
+                    ].map((provider, index) => (
+                      <motion.div
+                        key={provider.name}
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.5 + index * 0.1 }}
+                      >
+                        <a
+                          href={SOCIAL_LINKS[provider.name as keyof typeof SOCIAL_LINKS]}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full h-11 sm:h-12 border border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 group inline-flex items-center justify-center rounded-md hover:bg-accent"
                         >
-                          →
-                        </motion.span>
-                      </>
+                          <provider.icon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                        </a>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <div className="relative py-3">
+                    <div className="absolute inset-0 flex items-center">
+                      <Separator className="w-full" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-card px-3 text-muted-foreground font-medium">
+                        或使用邮箱注册
+                      </span>
+                    </div>
+                  </div>
+
+                  <Form method="post" className="space-y-3 sm:space-y-4">
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs sm:text-sm"
+                      >
+                        {error}
+                      </motion.div>
                     )}
-                  </Button>
-                </motion.div>
-              </Form>
+
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.6 }}
+                      className="space-y-2"
+                    >
+                      <label className="text-xs font-medium text-muted-foreground">您的姓名</label>
+                      <div className="relative group">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors z-10" />
+                        <Input
+                          type="text"
+                          name="name"
+                          placeholder="张三"
+                          className="pl-10 h-11 sm:h-12 text-sm border-border/50 focus:border-primary/50 rounded-xl transition-all"
+                          required
+                        />
+                      </div>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.65 }}
+                      className="space-y-2"
+                    >
+                      <label className="text-xs font-medium text-muted-foreground">邮箱地址</label>
+                      <div className="relative group">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors z-10" />
+                        <Input
+                          type="email"
+                          name="email"
+                          placeholder="your@email.com"
+                          className="pl-10 h-11 sm:h-12 text-sm border-border/50 focus:border-primary/50 rounded-xl transition-all"
+                          required
+                        />
+                      </div>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.7 }}
+                      className="space-y-2"
+                    >
+                      <label className="text-xs font-medium text-muted-foreground">设置密码</label>
+                      <div className="relative group">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          name="password"
+                          placeholder="••••••••"
+                          className="pl-10 pr-10 h-11 sm:h-12 text-sm border-border/50 focus:border-primary/50 rounded-xl transition-all"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.75 }}
+                      className="space-y-2"
+                    >
+                      <label className="text-xs font-medium text-muted-foreground">确认密码</label>
+                      <div className="relative group">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                        <Input
+                          type={showConfirmPassword ? "text" : "password"}
+                          name="confirmPassword"
+                          placeholder="••••••••"
+                          className="pl-10 pr-10 h-11 sm:h-12 text-sm border-border/50 focus:border-primary/50 rounded-xl transition-all"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.8 }}
+                    >
+                      <label className="flex items-start gap-2 cursor-pointer group text-xs sm:text-sm">
+                        <input
+                          type="checkbox"
+                          checked={agreedToTerms}
+                          onChange={(e) => setAgreedToTerms(e.target.checked)}
+                          className="rounded border-gray-300 mt-0.5 w-4 h-4 text-primary focus:ring-primary"
+                        />
+                        <span className="text-muted-foreground group-hover:text-foreground transition-colors">
+                          我已阅读并同意{" "}
+                          <Link to="/terms" className="text-primary hover:text-primary/80 font-medium transition-colors">
+                            服务条款
+                          </Link>{" "}
+                          和{" "}
+                          <Link to="/privacy" className="text-primary hover:text-primary/80 font-medium transition-colors">
+                            隐私政策
+                          </Link>
+                        </span>
+                      </label>
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.85 }}
+                    >
+                      <Button
+                        type="submit"
+                        className="w-full h-11 sm:h-12 text-sm font-medium bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                        disabled={isSubmitting || !agreedToTerms}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            注册中...
+                          </>
+                        ) : (
+                          <>
+                            创建账户
+                            <motion.span
+                              className="ml-2"
+                              animate={{ x: [0, 4, 0] }}
+                              transition={{ duration: 1.5, repeat: Infinity }}
+                            >
+                              →
+                            </motion.span>
+                          </>
+                        )}
+                      </Button>
+                    </motion.div>
+                  </Form>
+                </>
+              )}
             </CardContent>
 
             <CardFooter className="flex flex-col space-y-3 sm:space-y-4 px-4 sm:px-6 pb-4 sm:pb-7 pt-2">
-              <div className="relative w-full">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator className="w-full" />
-                </div>
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground text-center">
-                已有账户？{" "}
-                <Link to="/login" className="text-primary hover:text-primary/80 font-semibold transition-colors">
-                  立即登录
-                </Link>
-              </p>
+              {registrationEnabled ? (
+                <>
+                  <div className="relative w-full">
+                    <div className="absolute inset-0 flex items-center">
+                      <Separator className="w-full" />
+                    </div>
+                  </div>
+                  <p className="text-xs sm:text-sm text-muted-foreground text-center">
+                    已有账户？{" "}
+                    <Link to="/login" className="text-primary hover:text-primary/80 font-semibold transition-colors">
+                      立即登录
+                    </Link>
+                  </p>
+                </>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="w-full space-y-3"
+                >
+                  <Link to="/login" className="block w-full">
+                    <Button
+                      variant="default"
+                      className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 font-medium shadow-lg shadow-purple-500/30 transition-all hover:shadow-xl hover:shadow-purple-500/40"
+                    >
+                      <motion.span initial={{ x: 0 }} whileHover={{ x: -5 }} transition={{ duration: 0.2 }}>
+                        ← 返回登录
+                      </motion.span>
+                    </Button>
+                  </Link>
+                  <p className="text-center text-xs text-muted-foreground">使用现有账号登录系统</p>
+                </motion.div>
+              )}
             </CardFooter>
           </Card>
         </motion.div>

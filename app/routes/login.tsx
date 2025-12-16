@@ -79,8 +79,10 @@ export default function Login() {
     setPassword(config.demoPassword)
   }
 
-  const handleSocialLogin = (provider: string) => {
-    console.log(`使用 ${provider} 登录`)
+  const SOCIAL_LINKS = {
+    github: "https://github.com/halolight/halolight-remix",
+    google: "https://halolight-docs.h7ml.cn",
+    wechat: "https://github.com/halolight",
   }
 
   return (
@@ -195,14 +197,14 @@ export default function Login() {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.5 + index * 0.1 }}
                   >
-                    <Button
-                      variant="outline"
-                      type="button"
-                      className="w-full h-11 sm:h-12 border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 group"
-                      onClick={() => handleSocialLogin(provider.name)}
+                    <a
+                      href={SOCIAL_LINKS[provider.name as keyof typeof SOCIAL_LINKS]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full h-11 sm:h-12 border-border/50 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 group inline-flex items-center justify-center border rounded-lg"
                     >
                       <provider.icon className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                    </Button>
+                    </a>
                   </motion.div>
                 ))}
               </div>
